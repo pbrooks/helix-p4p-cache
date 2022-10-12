@@ -1,0 +1,14 @@
+[Unit]
+Description=Helix P4P Server $I 
+Documentation=https://www.perforce.com/manuals/v15.1/p4dist/chapter.proxy.html
+
+[Service]
+EnvironmentFile=/etc/helix-p4p.d/%i.env
+Type=simple
+PIDFile=/var/run/helix-p4p-%i.pid
+ExecStart=/usr/sbin/p4p &
+User=%i
+#ExecStart=/usr/sbin/p4p -v net.tcpsize=2000000 -v filesys.bufsize=2000000 -p ${LOCALPORT} -t ${REMOTEHOST} -r ${P4ROOT} -L ${P4LOGFILE} -v proxy.monitor.level=10 &
+
+[Install]
+WantedBy=multi-user.target

@@ -72,7 +72,7 @@ def test_file_path(mocker, capsys):
     out, err = capsys.readouterr()
     assert excinfo.value.code == 2
     assert "" == out
-    assert "Path {} is not a directory".format(path)
+    assert "Path {} is not a directory".format(path) == err
 
 
 def test_empty_path(mocker, capsys, caplog):
