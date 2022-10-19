@@ -1,5 +1,5 @@
 [Unit]
-Description=Helix P4P Server $I 
+Description=Helix P4P Server %I
 Documentation=https://www.perforce.com/manuals/v15.1/p4dist/chapter.proxy.html
 
 [Service]
