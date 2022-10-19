@@ -1,13 +1,12 @@
 [Unit]
-Description=Helix P4P Sync $I
+Description=Helix P4P Sync %I
 
 [Service]
 EnvironmentFile=/etc/helix-p4p.d/%i.env
 Type=oneshot
 StandardOutput=file:/var/log/helix-p4p/sync-%i.log
-ExecStart=/opt/perforce/servers/SAMPLE/bin/sync.sh
-User=$i
-# /var/log/helix-p4p ?
+ExecStart=/usr/bin/p4p-cache
+User=%i
 
 [Install]
 WantedBy=multi-user.target
