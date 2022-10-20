@@ -5,6 +5,10 @@ import subprocess
 import tempfile
 import threading
 
+import time
+import os
+import logging
+
 
 class P4DServer(threading.Thread):
 
@@ -22,6 +26,7 @@ class P4DServer(threading.Thread):
         env = {"P4ROOT": self.P4ROOT.name,
                "P4PORT": self.P4PORT}
         self._process = subprocess.Popen("p4d", env=env)
+        time.sleep(1.0)
 
     def __del__(self):
         self._process.terminate()
@@ -35,17 +40,21 @@ def p4d():
     return p4d
 
 
-def test_sync(p4d, capsys, caplog):
+def test_sync(p4d, capfd):
+    import sys
+    sys.argv = ['']
+    os.environ['P4PORT'] = p4d.P4PORT
     main()
-    out, err = capsys.readouterr()
+    out, err = capfd.readouterr()
     assert "" == out
     assert "" == err
 
 
-def test_sync_err(p4d, capsys, caplog):
+def test_sync_nop4d_err(capfd):
     with pytest.raises(SystemExit) as excinfo:
         main()
-    out, err = capsys.readouterr()
-    assert excinfo.value.code == 2
+
+    assert excinfo.value.code == 1
+    out, err = capfd.readouterr()
     assert "" == out
-    assert "foobar" == err
+    assert "Perforce client error" in err

@@ -15,6 +15,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     entry_points={
-        'console_scripts': ['p4p-flush=cache.flush:__main__']
+        'console_scripts': ['p4p-flush=cache.flush:__main__',
+                            'p4p-sync=cache.sync:__main__']
     }
 )
