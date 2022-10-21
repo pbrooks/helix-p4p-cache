@@ -5,7 +5,7 @@ Description=Helix P4P Sync %I
 EnvironmentFile=/etc/helix-p4p.d/%i.env
 Type=oneshot
 StandardOutput=file:/var/log/helix-p4p/sync-%i.log
-ExecStart=/usr/bin/p4p-cache
+ExecStart=/usr/bin/p4p-sync
 User=%i
 
 [Install]
