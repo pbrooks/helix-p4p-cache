@@ -9,6 +9,17 @@ import time
 import os
 import logging
 
+from P4 import P4
+from pathlib import Path
+
+
+'''
+P4D - Add basic files into the repo
+Then decide how to spin up a p4p.
+
+
+'''
+
 
 class P4DServer(threading.Thread):
 
@@ -41,8 +52,42 @@ def p4d():
 
 
 def test_sync(p4d, capfd):
+    # Section here, will make a client and submit files
+    data = (
+        ("Initial commit", {
+            "sample.txt": "Sample"}
+         ),
+    )
+
+    p4 = P4()
+    p4.port = p4d.P4PORT
+    p4.connect()
+    p4_client = p4.fetch_client()
+    root_dir = tempfile.TemporaryDirectory()
+    p4_client._root = root_dir.name
+    p4.save_client(p4_client)
+    root = Path(root_dir.name)
+    
+    for x in data:
+        files = []
+        for filename, content in x[1].items():
+            path = root.joinpath(filename)
+            with open(path, 'w') as fh:
+                fh.write(content)
+            files.append("//depot/" + filename)
+            p4.run_add(str(path))
+
+        change = p4.fetch_change()
+        change._description = x[0]
+        change._files = files
+        p4.run_submit(change)
+
+    # XXX: Principal here, need to also be able to run a p4p
+
+    # Run the sync
     import sys
     sys.argv = ['']
+    # XXX: Doesn't want to be the p4d direct
     os.environ['P4PORT'] = p4d.P4PORT
     main()
     out, err = capfd.readouterr()
