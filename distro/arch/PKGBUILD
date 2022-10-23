@@ -26,14 +26,11 @@ md5sums=("SKIP")
 validpgpkeys=()
 
 package() {
-    # XXX: Temporary before systemd is made
-    cp -r ../../../systemd helix-p4p-cache/.
-
     cd helix-p4p-cache
     python setup.py install --root="$pkgdir"
     mkdir -p "$pkgdir/etc/systemd/system"
     mkdir -p "$pkgdir/etc/helix-p4p.d"
     mkdir -p "$pkgdir/var/log/helix-p4p"
     cp systemd/* $pkgdir/etc/systemd/system/.
-    cp example/helix-p4p.d $pkgdir/etc/helix-p4p.d/.
+    cp -r example/helix-p4p.d $pkgdir/etc/helix-p4p.d/.
 }
