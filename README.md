@@ -25,6 +25,26 @@ options:
   --purge              Remove expired items from disk
 ```
 
+## Systemd
+
+### helix-p4p
+
+Service for running a Helix P4P server.
+
+```
+# 'example' is a given configuration name
+
+# Create a user to run the proxy and set the proxy root directory
+useradd -m -d /opt/perforce/example -s /bin/sh example
+su example -c "mkdir -p /opt/perforce/example/{root,cache}"
+
+systemctl enable helix-p4p@example
+systemctl start helix-p4p@example
+```
+
+
+
+
 ## TODO
 
 - Humanize file size outputs, such that automatic care is taken betwen bytes/MB/GB.

@@ -1,0 +1,10 @@
+[Unit]
+Description=Helix P4P Sync %I Timer
+Requires=helix-p4p-sync@%i.service
+
+[Timer]
+Unit=helix-p4p-sync@%i.service
+OnCalendar=hourly
+
+[Install]
+WantedBy=timers.target
