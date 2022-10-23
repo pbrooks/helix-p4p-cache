@@ -10,14 +10,22 @@ def __main__():
 
     from P4 import P4
 
+    # XXX: Logon, test for setting the pw?
+    # XXX: SSL, test for trust
+
+    # XXX: Does this take the environment variables?
     p4 = P4().connect()
-    p4_client = p4.fetch_client()
+    p4_client = p4.fetch_client("sync")
+    p4_client._root = os.environ.get("P4ROOT")
     p4.save_client(p4_client)
+
+    os.environ['P4CLIENT'] = "sync"
 
     try:
         for x in commands:
             cmd = [*x, *sys.argv[1:]]
-            subprocess.run(cmd, check=True)
+            # XXX: Inject env vars here
+            subprocess.run(cmd, check=True, env=os.environ)
     except subprocess.CalledProcessError as ex:
         sys.exit(ex.returncode)
 
