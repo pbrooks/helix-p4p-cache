@@ -26,12 +26,6 @@ def init_client(P4CLIENT):
 
 
 def sync(P4CLIENT):
-    log.basicConfig(level=log.INFO, handlers=(
-            log.StreamHandler(sys.stdout),
-            log.StreamHandler(sys.stderr),
-
-        ))
-
     # P4Python doesn't understand sync
     os.environ['P4CLIENT'] = P4CLIENT
     commands = (
@@ -44,6 +38,14 @@ def sync(P4CLIENT):
 
 
 def __main__():
+    log.basicConfig(level=log.INFO, format='%(message)s')
+    '''
+    , handlers=(
+            log.StreamHandler(sys.stdout),
+            log.StreamHandler(sys.stderr),
+    ))
+    '''
+
     # IMPROVE: The user should be able to suggest the P4CLIENT name
     P4CLIENT = "sync"
 

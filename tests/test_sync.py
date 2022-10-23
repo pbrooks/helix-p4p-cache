@@ -123,14 +123,18 @@ def p4p(p4d):
     return p4p
 
 
-def test_sync(p4d, p4p, capfd):
-    data = (
+DATA = {
+    "single": (
         ("Initial commit", {
             "sample.txt": "Sample"}
          ),
     )
+}
+
+
+def test_sync(p4d, p4p, capfd):
     p4_main = P4Client(p4d.P4PORT, "init")
-    p4_main.add_data(data)
+    p4_main.add_data(DATA["single"])
 
     sync_root = tempfile.TemporaryDirectory()
     sync(p4p.P4PORT, sync_root.name)
@@ -140,16 +144,63 @@ def test_sync(p4d, p4p, capfd):
     assert "" == err
 
 
+def test_resync(p4d, p4p, capfd):
+    p4_main = P4Client(p4d.P4PORT, "init")
+    p4_main.add_data(DATA["single"])
+
+    sync_root = tempfile.TemporaryDirectory()
+    sync(p4p.P4PORT, sync_root.name)
+    out, err = capfd.readouterr()
+    assert "//depot/sample.txt#1 - added as {}/sample.txt\n"\
+        .format(sync_root.name) == out
+    assert "" == err
+
+    sync(p4p.P4PORT, sync_root.name)
+    out, err = capfd.readouterr()
+    assert "" == out
+    assert "File(s) up-to-date.\n" == err
+
+
+def test_sync_p4d(p4d, p4p, capfd):
+    p4_main = P4Client(p4d.P4PORT, "init")
+    p4_main.add_data(DATA["single"])
+
+    sync_root = tempfile.TemporaryDirectory()
+    sync(p4d.P4PORT, sync_root.name)
+    out, err = capfd.readouterr()
+    assert "//depot/sample.txt#1 - added as {}/sample.txt\n"\
+        .format(sync_root.name) == out
+    assert "" == err
+
+
+def test_sync_nop4d_p4p_err(p4d, p4p, caplog):
+    p4d._process.terminate()
+
+    sync_root = tempfile.TemporaryDirectory()
+    with pytest.raises(SystemExit) as excinfo:
+        sync(p4p.P4PORT, sync_root.name)
+    assert excinfo.value.code == 1
+    assert "Proxy unable to communicate" in caplog.messages[0]
+
+
+def test_sync_norev_err(p4d, p4p, capfd):
+    sync_root = tempfile.TemporaryDirectory()
+    sync(p4p.P4PORT, sync_root.name)
+    out, err = capfd.readouterr()
+    assert "" == out
+    assert "No such file(s).\n" == err
+
+
 def test_sync_nop4d_err(caplog):
     with pytest.raises(SystemExit) as excinfo:
         main()
 
     assert excinfo.value.code == 1
+    # IMPROVE: caplog/capfd difference, expecting message at idx 0
     assert "Connect to server failed" in caplog.messages[0]
 
 
 # bar = "\n".join(["export {}={}".format(k, v) for k, v in p4p.env.items()])
-# XXX: Sync against the p4d, instead of p4p?
-# XXX: Case with no files at all
-# XXX: Resync gets no files
-# XXX: Test p4p, but no p4d?
+# XXX: Check contents of destination proxy?
+# XXX: Test arguments instead of env variables?
+# XXX: Test entire P4 error messages
