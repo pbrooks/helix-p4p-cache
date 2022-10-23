@@ -38,6 +38,14 @@ def sync(P4CLIENT):
 
 
 def __main__():
+    # IMPROVE
+    # Out of cohesive approach for running commands
+    # Both don't fully use argv/env, it should wrap the standard
+    # args for p4 for all commands
+
+    # IMPROVE
+    # Lack of unit testing, are edges missed?
+
     log.basicConfig(level=log.INFO, format='%(message)s')
     '''
     , handlers=(
