@@ -1,6 +1,5 @@
 from cache.sync import __main__ as main
 
-import logging as log
 import os
 from pathlib import Path
 import pytest
