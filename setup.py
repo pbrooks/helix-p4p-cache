@@ -11,6 +11,7 @@ setup(
     url="https://packages.python.org/helix-p4p-cache",
     packages=["cache"],
     classifiers=[
+        "Programming Language :: Python :: 3",
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
     ],
