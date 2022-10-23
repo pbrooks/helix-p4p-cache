@@ -7,6 +7,7 @@ import threading
 
 import time
 import os
+import sys
 import logging
 
 from P4 import P4
@@ -66,6 +67,47 @@ class P4PServer(NetworkDaemon):
         time.sleep(1.0)
 
 
+class P4Client(object):
+
+    def get_p4(self, P4PORT, P4CLIENT, P4ROOT):
+        p4 = P4()
+        p4.port = P4PORT
+        p4.connect()
+        p4.client = P4CLIENT
+        p4_client = p4.fetch_client()
+        p4_client._root = P4ROOT
+        p4.save_client(self.p4_client)
+        return p4, p4_client
+
+    def __init__(self, P4PORT, P4CLIENT):
+        self.root_dir = tempfile.TemporaryDirectory()
+        self.p4, self.p4_client = self.get_p4(P4PORT, P4CLIENT,
+                                              self.root_dir.name)
+
+    def add_data(self, data):
+        root = Path(self.root_dir.name)
+        for x in data:
+            files = []
+            for filename, content in x[1].items():
+                path = root.joinpath(filename)
+                with open(path, 'w') as fh:
+                    fh.write(content)
+                files.append("//depot/" + filename)
+                self.p4.run_add(str(path))
+
+            change = self.p4.fetch_change()
+            change._description = x[0]
+            change._files = files
+            self.p4.run_submit(change)
+
+
+def sync(P4PORT, P4ROOT):
+    sys.argv = ['']
+    os.environ['P4PORT'] = P4PORT
+    os.environ['P4ROOT'] = P4ROOT
+    main()
+
+
 @pytest.fixture
 def p4d():
     p4d = P4DServer()
@@ -82,58 +124,21 @@ def p4p(p4d):
     return p4p
 
 
-# bar = "\n".join(["export {}={}".format(k, v) for k, v in p4p.env.items()])
-
-
 def test_sync(p4d, p4p, capfd):
-    # Section here, will make a client and submit files
     data = (
         ("Initial commit", {
             "sample.txt": "Sample"}
          ),
     )
+    p4_main = P4Client(p4d.P4PORT, "init")
+    p4_main.add_data(data)
 
-    p4 = P4()
-    p4.port = p4d.P4PORT
-    p4.connect()
-    p4.client = "init"
-    p4_client = p4.fetch_client()
-    root_dir = tempfile.TemporaryDirectory()
-    p4_client._root = root_dir.name
-    p4.save_client(p4_client)
-    root = Path(root_dir.name)
-    
-    for x in data:
-        files = []
-        for filename, content in x[1].items():
-            path = root.joinpath(filename)
-            with open(path, 'w') as fh:
-                fh.write(content)
-            files.append("//depot/" + filename)
-            p4.run_add(str(path))
-
-        change = p4.fetch_change()
-        change._description = x[0]
-        change._files = files
-        p4.run_submit(change)
-
-    # XXX: Principal here, need to also be able to run a p4p
-
-    # Run the sync
-    import sys
-    sys.argv = ['']
     sync_root = tempfile.TemporaryDirectory()
-    os.environ['P4PORT'] = p4p.P4PORT
-    os.environ['P4ROOT'] = sync_root.name
-    out, err = capfd.readouterr()
-    main()
+    sync(p4p.P4PORT, sync_root.name) 
     out, err = capfd.readouterr()
     assert "//depot/sample.txt#1 - added as {}/sample.txt\n"\
         .format(sync_root.name) == out
     assert "" == err
-
-    # XXX: Case with no files at all
-    # XXX: Resync gets no files
 
 
 def test_sync_nop4d_err(capfd):
@@ -144,3 +149,11 @@ def test_sync_nop4d_err(capfd):
     out, err = capfd.readouterr()
     assert "" == out
     assert "Perforce client error" in err
+
+
+# bar = "\n".join(["export {}={}".format(k, v) for k, v in p4p.env.items()])
+# XXX: Case with no files at all
+# XXX: Resync gets no files
+# XXX: Test p4p, but no p4d?
+
+
