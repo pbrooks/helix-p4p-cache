@@ -27,6 +27,17 @@ options:
 
 ## Systemd
 
+### helix-p4p-sync
+
+Oneshot for syncing a proxy
+
+```
+# 'example' is a given configuration name
+
+systemctl enable helix-p4p-sync@example
+systemctl start helix-p4p-sync@example
+```
+
 ### helix-p4p
 
 Service for running a Helix P4P server.
@@ -41,7 +52,6 @@ su example -c "mkdir -p /opt/perforce/example/{root,cache}"
 systemctl enable helix-p4p@example
 systemctl start helix-p4p@example
 ```
-
 
 
 
