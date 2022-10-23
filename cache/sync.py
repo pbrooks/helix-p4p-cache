@@ -2,25 +2,35 @@ import os
 import subprocess
 import sys
 
+from P4 import P4
+
 
 def __main__():
-    commands = (
-            ('p4', '-Zproxyload', 'sync'),
-            )
+    # REQUIRED: Ability to logon with password
+    # echo $P4PASSWD | p4 login
 
-    from P4 import P4
+    # REQUIRED: If SSL, then trust the server
+    # p4 trust -y -f
 
-    # XXX: Logon, test for setting the pw?
-    # XXX: SSL, test for trust
+    # P4Python wraps client creation elegantly
+    # (Without the use of unix pipes being required)
 
-    # XXX: Does this take the environment variables?
+    # IMPROVE: The user should be able to suggest the P4CLIENT name
+    P4CLIENT = "sync"
+
+    # IMPROVE: No args from the user being passed here
     p4 = P4().connect()
-    p4_client = p4.fetch_client("sync")
+    p4_client = p4.fetch_client(P4CLIENT)
+
+    # FAULT: P4_Client ignores inherited P4ROOT from environ
     p4_client._root = os.environ.get("P4ROOT")
     p4.save_client(p4_client)
 
-    os.environ['P4CLIENT'] = "sync"
-
+    # P4Python doesn't understand sync
+    os.environ['P4CLIENT'] = P4CLIENT
+    commands = (
+            ('p4', '-Zproxyload', 'sync'),
+            )
     try:
         for x in commands:
             cmd = [*x, *sys.argv[1:]]
@@ -30,13 +40,3 @@ def __main__():
         sys.exit(ex.returncode)
 
 #__main__()
-'''
-p4 clients
-p4 client -o $P4CLIENT | sed "s/Created by/Created by automated build/" | p4 client -i 	
-p4 client $P4CLIENT  
-p4 client -o $P4CLIENT  | p4 client -i 
-p4 trust -y -f
-echo $P4PASSWD | p4 login
-# The Actual command part
-p4 -Zproxyload sync --parallel=2
-'''
