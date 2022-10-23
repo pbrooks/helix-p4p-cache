@@ -1,17 +1,16 @@
 from cache.sync import __main__ as main
-import socket
+
+import os
+from pathlib import Path
 import pytest
+import socket
 import subprocess
+import sys
 import tempfile
 import threading
-
 import time
-import os
-import sys
-import logging
 
 from P4 import P4
-from pathlib import Path
 
 
 class NetworkDaemon(threading.Thread):
