@@ -1,5 +1,6 @@
 from cache.sync import __main__ as main
 
+import logging as log
 import os
 from pathlib import Path
 import pytest
@@ -75,7 +76,7 @@ class P4Client(object):
         p4.client = P4CLIENT
         p4_client = p4.fetch_client()
         p4_client._root = P4ROOT
-        p4.save_client(self.p4_client)
+        p4.save_client(p4_client)
         return p4, p4_client
 
     def __init__(self, P4PORT, P4CLIENT):
@@ -133,26 +134,23 @@ def test_sync(p4d, p4p, capfd):
     p4_main.add_data(data)
 
     sync_root = tempfile.TemporaryDirectory()
-    sync(p4p.P4PORT, sync_root.name) 
+    sync(p4p.P4PORT, sync_root.name)
     out, err = capfd.readouterr()
     assert "//depot/sample.txt#1 - added as {}/sample.txt\n"\
         .format(sync_root.name) == out
     assert "" == err
 
 
-def test_sync_nop4d_err(capfd):
+def test_sync_nop4d_err(caplog):
     with pytest.raises(SystemExit) as excinfo:
         main()
 
     assert excinfo.value.code == 1
-    out, err = capfd.readouterr()
-    assert "" == out
-    assert "Perforce client error" in err
+    assert "Connect to server failed" in caplog.messages[0]
 
 
 # bar = "\n".join(["export {}={}".format(k, v) for k, v in p4p.env.items()])
+# XXX: Sync against the p4d, instead of p4p?
 # XXX: Case with no files at all
 # XXX: Resync gets no files
 # XXX: Test p4p, but no p4d?
-
-
