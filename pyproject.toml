@@ -20,3 +20,7 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/pbrooks/helix-p4p-cache"
 "Bug Tracker" = "https://github.com/pbrooks/helix-p4p-cache/issues"
+
+
+[tool.setuptools.dynamic]
+dependencies = requirements.txt
